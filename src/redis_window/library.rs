@@ -96,7 +96,7 @@ pub async fn redis_hash_factory(
                     match redis_result_string_result {
                         Some(received) => {
                             let (id, serialized_redis_response) = received;
-                            match pool.clone().get().await {
+                            match pool.get().await {
                                 Ok(mut conn) => {
                                     if let Err(e) = conn.hset::<_, _, _, ()>(&hash_name, id, serialized_redis_response).await {
                                         tracing::error!("{}", e);

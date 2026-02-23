@@ -10,7 +10,10 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
-use crate::{redis_communication::RedisRequest, redis_window::RedisWindowErr};
+use crate::{
+    redis_communication::{RedisRequest, RedisResponse},
+    redis_window::RedisWindowErr,
+};
 
 pub struct ScrapeWindow {
     client: Client,
@@ -32,7 +35,7 @@ fn spawn_scraper<RR, Scraper, JobPusher>(
         + 'static
         + Send
         + Sync,
-    Scraper: Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = String> + Send>>
+    Scraper: Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>>
         //                                                              (id,     job_id, result)
         + 'static
         + Send
@@ -81,11 +84,14 @@ fn spawn_scraper<RR, Scraper, JobPusher>(
                             let id = redis_req.get_id();
                             let url = redis_req.get_url();
                             let job_id = redis_req.get_job_id();
+                            let index = redis_req.index();
 
                             inner_set.spawn(async move {
                                 let _guard = guard;
                                 tokio::select! {
-                                    parsed = scraper(client, url) => {
+                                    mut red_response = scraper(client, url) => {
+                                        red_response.index = index;
+                                        let parsed = serde_json::to_string(&red_response).unwrap();
                                         match result_tx.send((id.clone(), parsed)).await {
                                             Ok(_) => {
                                                 if let Err(e) = job_pusher(job_id, id).await {
@@ -138,7 +144,7 @@ impl ScrapeWindow {
             + 'static
             + Send
             + Sync,
-        Scraper: Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = String> + Send>>
+        Scraper: Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>>
             + 'static
             + Send
             + Sync,

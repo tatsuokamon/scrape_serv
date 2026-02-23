@@ -13,4 +13,7 @@ pub enum ScrapeErr {
 
     #[error("RequestErr LoopOut")]
     LoopOutErr,
+
+    #[error("FFICall Err {0}")]
+    FFICallErr(i32),
 }

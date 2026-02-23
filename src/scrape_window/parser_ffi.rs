@@ -9,8 +9,24 @@ unsafe extern "C" {
     pub fn find_meta(html: *const c_char, result: *mut *mut c_char) -> i32;
     pub fn find_detail(html: *const c_char, result: *mut *mut c_char) -> i32;
     pub fn update_tag(html: *const c_char, result: *mut *mut c_char) -> i32;
-    pub fn find_max_idx(html: *const c_char, result: *mut *mut c_char) -> i32;
+    pub fn find_max_idx(html: *const c_char, result: *mut i32) -> i32;
     pub fn free_char(ptr: *mut c_char);
+}
+
+pub fn max_idx_finder(html: String) -> Result<String, ScrapeErr> {
+    let html_cchar = CString::new(html)?;
+    let mut max_idx: i32 = -1;
+    let ffi_result: i32;
+
+    unsafe {
+        ffi_result = find_max_idx(html_cchar.as_ptr(), &mut max_idx);
+    };
+
+    if ffi_result == 0 {
+        Ok(format!("{}", max_idx))
+    } else {
+        Err(ScrapeErr::FFICallErr(ffi_result))
+    }
 }
 
 pub fn ffi_parser_factory(
@@ -38,7 +54,7 @@ pub fn ffi_parser_factory(
         if ffi_result == 0 {
             Ok(result)
         } else {
-            Err(ScrapeErr::NonNulIsNoneErr)
+            Err(ScrapeErr::FFICallErr(ffi_result))
         }
     }
 }
@@ -78,24 +94,24 @@ fn real_scraper_factory(
 pub fn scraper_factory(
     parser: impl Fn(String) -> Result<String, ScrapeErr> + 'static + Send + Sync,
     retry: i32,
-) -> impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = String> + Send>> // Fn(client, url)
+) -> impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>> // Fn(client, url)
 {
     let real_func = Arc::new(real_scraper_factory(parser, retry));
     move |client: reqwest::Client, url: String| {
         let real_func = real_func.clone();
         Box::pin(async move {
-            let resp = match real_func(client, url).await {
+            match real_func(client, url).await {
                 Ok(result) => RedisResponse {
                     payload: Some(result),
                     error: None,
+                    index: -1,
                 },
                 Err(e) => RedisResponse {
                     payload: None,
                     error: Some(format!("{}", e)),
+                    index: -1,
                 },
-            };
-
-            return serde_json::to_string(&resp).unwrap();
+            }
         })
     }
 }

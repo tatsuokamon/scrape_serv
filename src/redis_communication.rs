@@ -4,6 +4,7 @@ pub trait RedisRequest {
     fn get_url(&self) -> String;
     fn get_id(&self) -> String;
     fn get_job_id(&self) -> String;
+    fn index(&self) -> i32;
 }
 
 #[derive(serde::Deserialize)]
@@ -11,12 +12,14 @@ pub struct BasicRedisReq {
     url: String,
     id: String,
     job_id: String,
+    index: i32,
 }
 
 #[derive(Serialize)]
 pub struct RedisResponse {
     pub error: Option<String>,
     pub payload: Option<String>,
+    pub index: i32,
 }
 
 impl RedisRequest for BasicRedisReq {
@@ -28,5 +31,9 @@ impl RedisRequest for BasicRedisReq {
     }
     fn get_job_id(&self) -> String {
         self.job_id.clone()
+    }
+
+    fn index(&self) -> i32 {
+        self.index
     }
 }

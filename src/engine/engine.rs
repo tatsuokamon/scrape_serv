@@ -4,7 +4,7 @@ use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
 
 use crate::engine::err::EngineErr;
-use crate::redis_communication::RedisRequest;
+use crate::redis_communication::{RedisRequest, RedisResponse};
 use crate::redis_window::{RedisWindow, RedisWindowBuilder};
 use crate::scrape_window::ScrapeWindow;
 use crate::thread_handler::ThreadHandler;
@@ -65,7 +65,7 @@ impl Engine {
         &self,
         redis_queue_keyword: String,
         redis_hash_keyword: String,
-        scraper: impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = String> + Send>>
+        scraper: impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>>
         + Send
         + Sync
         + 'static,

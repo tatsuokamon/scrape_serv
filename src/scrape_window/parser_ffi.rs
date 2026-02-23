@@ -13,7 +13,7 @@ unsafe extern "C" {
     pub fn free_char(ptr: *mut c_char);
 }
 
-pub fn max_idx_finder(html: String) -> Result<String, ScrapeErr> {
+pub fn max_idx_finder(html: &str) -> Result<String, ScrapeErr> {
     let html_cchar = CString::new(html)?;
     let mut max_idx: i32 = -1;
     let ffi_result: i32;
@@ -31,8 +31,8 @@ pub fn max_idx_finder(html: String) -> Result<String, ScrapeErr> {
 
 pub fn ffi_parser_factory(
     foreign_func: unsafe extern "C" fn(*const c_char, *mut *mut c_char) -> i32,
-) -> impl Fn(String) -> Result<String, ScrapeErr> {
-    move |html_string: String| {
+) -> impl Fn(&str) -> Result<String, ScrapeErr> {
+    move |html_string: &str| {
         let html_cchar = CString::new(html_string)?;
         let mut result_json = std::ptr::null_mut();
         let ffi_result: i32;
@@ -60,7 +60,7 @@ pub fn ffi_parser_factory(
 }
 
 fn real_scraper_factory(
-    parser: impl Fn(String) -> Result<String, ScrapeErr> + 'static + Send + Sync,
+    parser: impl Fn(&str) -> Result<String, ScrapeErr> + 'static + Send + Sync,
     retry: i32,
 ) -> impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = Result<String, ScrapeErr>> + Send>> // Fn(client, url)
 {
@@ -77,7 +77,7 @@ fn real_scraper_factory(
                     Ok(result) => {
                         resp = result;
                         let text = resp.text().await?;
-                        return moved_parser(text);
+                        return moved_parser(&text);
                     }
                     Err(e) => {
                         tracing::error!("{}", e);
@@ -92,7 +92,7 @@ fn real_scraper_factory(
 }
 
 pub fn scraper_factory(
-    parser: impl Fn(String) -> Result<String, ScrapeErr> + 'static + Send + Sync,
+    parser: impl Fn(&str) -> Result<String, ScrapeErr> + 'static + Send + Sync,
     retry: i32,
 ) -> impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>> // Fn(client, url)
 {

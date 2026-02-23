@@ -30,10 +30,10 @@ async fn main() {
     get_env!(MetaResultHashKeyWord, "META_RESULT_HASH_KEYWORD");
     get_env!(DetailReqQKeyword, "DETAIL_REQUEST_Q_KEYWORD");
     get_env!(DetailResultHashKeyword, "DETAIL_RESULT_HASH_KEYWORD");
-    get_env!(TagReqQKeyword, "DETAIL_REQUEST_Q_KEYWORD");
-    get_env!(TagResultHashKeyword, "DETAIL_RESULT_HASH_KEYWORD");
-    get_env!(MaxIdxReqQKeyword, "DETAIL_REQUEST_Q_KEYWORD");
-    get_env!(MaxIdxResultHashKeyword, "DETAIL_RESULT_HASH_KEYWORD");
+    get_env!(TagReqQKeyword, "TAG_REQUEST_Q_KEYWORD");
+    get_env!(TagResultHashKeyword, "TAG_RESULT_HASH_KEYWORD");
+    get_env!(MaxIdxReqQKeyword, "IDX_REQUEST_Q_KEYWORD");
+    get_env!(MaxIdxResultHashKeyword, "IDX_RESULT_HASH_KEYWORD");
 
     let engine = engine::EngineBuilder::new()
         .redis_url(RedisURL)

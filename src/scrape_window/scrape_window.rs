@@ -76,7 +76,7 @@ fn spawn_scraper<RR, Scraper, JobPusher>(
                                     redis_req = req;
                                 },
                                 Err(e) => {
-                                    tracing::error!("{}", e);
+                                    tracing::error!("{}: {}: serde_json::from_str", &received ,e);
                                     continue;
                                 }
                             };

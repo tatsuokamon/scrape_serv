@@ -5,7 +5,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::engine::err::EngineErr;
 use crate::redis_communication::{RedisRequest, RedisResponse};
-use crate::redis_window::{RedisWindow, RedisWindowBuilder};
+use crate::redis_window::{FactoryConfig, RedisWindow, RedisWindowBuilder};
 use crate::scrape_window::ScrapeWindow;
 use crate::thread_handler::ThreadHandler;
 
@@ -50,7 +50,6 @@ impl EngineBuilder {
     pub async fn build(self) -> Result<Engine, EngineErr> {
         Ok(Engine {
             redis_window: RedisWindowBuilder::new()
-                .channel_buf(self.channel_buf)
                 .max_size(self.max_size)
                 .redis_url(self.redis_url)
                 .build()
@@ -65,6 +64,7 @@ impl Engine {
         &self,
         redis_queue_keyword: String,
         redis_hash_keyword: String,
+        factory_config: &FactoryConfig,
         scraper: impl Fn(reqwest::Client, String) -> Pin<Box<dyn Future<Output = RedisResponse> + Send>>
         + Send
         + Sync
@@ -80,7 +80,13 @@ impl Engine {
 
         match self
             .redis_window
-            .redis_queue_factory(&mut set, token.child_token(), redis_queue_keyword)
+            .redis_queue_factory(
+                &mut set,
+                token.child_token(),
+                redis_queue_keyword,
+                factory_config.req_channel_buf,
+                factory_config.blocking_time
+            )
             .await
         {
             Ok(rx) => {
@@ -96,7 +102,12 @@ impl Engine {
 
         match self
             .redis_window
-            .redis_hash_factory(&mut set, token.child_token(), redis_hash_keyword)
+            .redis_hash_factory(
+                &mut set,
+                token.child_token(),
+                redis_hash_keyword,
+                factory_config.result_channel_buf
+            )
             .await
         {
             Ok(tx) => {

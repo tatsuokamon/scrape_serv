@@ -17,7 +17,6 @@ use crate::redis_window::library::{
 
 pub struct RedisWindow {
     pool: Arc<Pool<RedisConnectionManager>>,
-    channel_buf: usize,
     client: Arc<Client>,
 }
 
@@ -26,14 +25,17 @@ impl RedisWindow {
         &self,
         set: &mut JoinSet<()>,
         token: CancellationToken,
-        queue_name: String,
+        req_q_keyword: String,
+        channnel_buf: usize,
+        blocking_time: f64,
     ) -> Result<Receiver<String>, RedisWindowErr> {
         _redis_queue_factory(
             set,
             token,
             self.client.clone(),
-            queue_name,
-            self.channel_buf,
+            req_q_keyword,
+            channnel_buf,
+            blocking_time,
         )
         .await
     }
@@ -43,9 +45,10 @@ impl RedisWindow {
         set: &mut JoinSet<()>,
         token: CancellationToken,
         hash_name: String,
+        channel_buf: usize,
     ) -> Result<Sender<(String, String)>, RedisWindowErr> {
         // (id, serialized_redis_response)
-        _redis_hash_factory(set, token, self.pool.clone(), hash_name, self.channel_buf).await
+        _redis_hash_factory(set, token, self.pool.clone(), hash_name, channel_buf).await
     }
 
     pub async fn job_push_queue_factory(
@@ -62,7 +65,6 @@ impl RedisWindow {
 pub struct RedisWindowBuilder {
     redis_url: String,
     max_size: u32,
-    channel_buf: usize,
 }
 
 impl RedisWindowBuilder {
@@ -80,11 +82,6 @@ impl RedisWindowBuilder {
         self
     }
 
-    pub fn channel_buf(mut self, buf: usize) -> Self {
-        self.channel_buf = buf;
-        self
-    }
-
     pub async fn build(self) -> Result<RedisWindow, RedisWindowErr> {
         let manager = RedisConnectionManager::new(self.redis_url.clone())?;
         let client = Client::open(self.redis_url)?;
@@ -96,7 +93,6 @@ impl RedisWindowBuilder {
                     .build(manager)
                     .await?,
             ),
-            channel_buf: self.channel_buf,
             client: Arc::new(client),
         })
     }

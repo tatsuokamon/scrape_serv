@@ -1,5 +1,6 @@
 use std::{pin::Pin, sync::Arc, time::Duration};
 
+use crate::redis_window::err::RedisWindowErr;
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use redis::{AsyncCommands, AsyncConnectionConfig, Client, aio::MultiplexedConnection};
@@ -9,7 +10,12 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
-use crate::redis_window::err::RedisWindowErr;
+#[derive(Clone)]
+pub struct FactoryConfig {
+    pub req_channel_buf: usize,
+    pub result_channel_buf: usize,
+    pub blocking_time: f64,
+}
 
 pub async fn redis_queue_factory(
     set: &mut JoinSet<()>,
@@ -17,6 +23,7 @@ pub async fn redis_queue_factory(
     client: Arc<Client>,
     queue_name: String,
     channel_buf: usize,
+    blocking_time: f64,
 ) -> Result<Receiver<String>, RedisWindowErr> {
     let (tx, rx) = tokio::sync::mpsc::channel(channel_buf);
 
@@ -40,7 +47,7 @@ pub async fn redis_queue_factory(
             };
 
             tokio::select! {
-                received_result = conn.blpop::<_, (String, String)>(&queue_name, 5.0) => {
+                received_result = conn.blpop::<_, (String, String)>(&queue_name, blocking_time) => {
                     match received_result {
                         Ok(received) => {
                             let (_, received_redis_request) = received;

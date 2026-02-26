@@ -105,7 +105,7 @@ async fn main() {
         Pool::builder()
             .max_size(get_env_with_parsing!("MAX_POOL_SIZE", u32))
             .connection_timeout(Duration::from_secs(get_env_with_parsing!(
-                "CENNECTION_TIMEOUT",
+                "CONNECTION_TIMEOUT",
                 u64
             )))
             .build(manager)

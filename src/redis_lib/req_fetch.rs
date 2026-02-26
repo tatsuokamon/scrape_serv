@@ -23,7 +23,7 @@ pub async fn invoke_req_fetcher(
     client: Arc<redis::Client>,
     client_config: Arc<ClientAcquireConfig>,
 
-    req_fetch_contract: Arc<ReqFetchContract>,
+    req_fetch_contract: ReqFetchContract,
 ) -> Result<Receiver<String>, RequestFetcherErr> {
     let conn = client_config.acquire(&client).await?;
     let (tx, rx) = tokio::sync::mpsc::channel(req_fetch_contract.channel_buf);

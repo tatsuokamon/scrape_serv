@@ -1,26 +1,27 @@
-# shared
-META_REQUEST_Q_KEYWORD=
+# create request fetch contract
+	# channel_buf: 
+	CHANNEL_BUF=
+	# blocking time while request fetch
+	BLOCKING_TIME=
+	# request_q_keyword
+	META_REQUEST_Q_KEYWORD=
+	DETAIL_REQUEST_Q_KEYWORD=
+	TAG_REQUEST_Q_KEYWORD=
+	IDX_REQUEST_Q_KEYWORD=
 
-DETAIL_REQUEST_Q_KEYWORD=
+# ready parser
+	# reqwest client retry
+	NET_REQUEST_RETRY=
 
-TAG_REQUEST_Q_KEYWORD=
+# ready process request contract
+	# result keyword
+	RESULT_KEYWORD=
+	# redis recently data storage time
+	STORAGE_TIME=
 
-IDX_REQUEST_Q_KEYWORD=
-
-RESULT_KEYWORD=
-
-
-REDIS_URL=
-
-PARSER_REQUEST_RETRY=
-
-POOL_SIZE=
-
-REQUEST_CHANNEL_BUF=
-
-RESULT_CHANNEL_BUF=
-
-BLOCKING_TIME=
-
-SEMAPHORE_SIZE=
-
+# ready redis client
+	# redis url
+	REDIS_URL=
+	INIT_BACKOFF=
+	MAX_POOL_SIZE=
+	CONNECTION_TIMEOUT=

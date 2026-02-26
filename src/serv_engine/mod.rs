@@ -45,7 +45,7 @@ pub async fn create_path<RR>(
     redis_client: Arc<redis::Client>,
     redis_client_config: Arc<ClientAcquireConfig>,
 
-    req_fetch_contract: Arc<ReqFetchContract>,
+    req_fetch_contract: ReqFetchContract,
 
     // process request part
     pool: Arc<Pool<RedisConnectionManager>>,
@@ -158,7 +158,7 @@ pub fn create_identifier(url: &String) -> String {
     let mut hasher = sha2::Sha256::new();
     hasher.update(url.as_bytes());
 
-    String::from_utf8(hasher.finalize().to_ascii_lowercase()).unwrap()
+    hex::encode(hasher.finalize())
 }
 
 pub async fn check_if_recently_got(

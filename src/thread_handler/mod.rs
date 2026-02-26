@@ -26,4 +26,3 @@ impl Drop for ThreadHandler {
         self.token.cancel();
     }
 }
-

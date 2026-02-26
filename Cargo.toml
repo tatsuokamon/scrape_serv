@@ -8,6 +8,7 @@ anyhow = "1.0.100"
 bb8 = "0.9.1"
 bb8-redis = "0.26.0"
 dotenv = "0.15.0"
+hex = "0.4.3"
 redis = { version = "1.0.3", features = ["tokio-comp"] }
 reqwest = "0.13.1"
 serde = { version = "1.0.228", features = ["derive"] }

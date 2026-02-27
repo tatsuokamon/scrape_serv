@@ -22,19 +22,20 @@
 
 	COPY --from=cpp-builder /cpp/build/libcpp.a ./libcpp.a
 	# need gumbo.a
-	COPY --from=cpp-builder /cpp/build/vcpkg_installed/x64-linux/debug/lib/libgumbo.a ./libgumbo.a
+	COPY --from=cpp-builder /cpp/build/vcpkg_installed/x64-linux/lib/libgumbo.a ./libgumbo.a
 
-	COPY src/ .
-	COPY Cargo.toml .
+	COPY src ./src
+	COPY Cargo.toml ./
+	COPY build.rs ./
 
 	RUN cargo build --release
 
+# running stage
 	FROM gcr.io/distroless/cc-debian12
 	WORKDIR /app
 
-# running stage
 	COPY --from=rust-builder /app/target/release/rust .
-	COPY ./rust/.env .
+	COPY ./ .env .
 	ENV PORT=8080
 	# ENV REDIS_URL= // need 
 	EXPOSE 8080

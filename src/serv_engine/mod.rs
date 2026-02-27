@@ -135,7 +135,7 @@ where
             )
             .await;
             temp_resp.index = idx;
-            update_recently_status(&url, conn, 300).await?;
+            update_recently_status(&url, conn, process_request_contract.storage_time).await?;
 
             temp_resp
         }

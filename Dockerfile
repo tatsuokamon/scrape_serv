@@ -17,7 +17,7 @@
 	RUN cmake --build build --config Release
 
 # Rust build
-	FROM rust:1.93 AS rust-builder
+	FROM rust:1.75-bookworm AS rust-builder
 	WORKDIR /app
 
 	COPY --from=cpp-builder /cpp/build/libcpp.a ./libcpp.a

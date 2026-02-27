@@ -1,0 +1,5 @@
+{
+	"name": "asms",
+	"version": "0.1.0",
+	"dependencies": ["gumbo", "date", "nlohmann-json"]
+}

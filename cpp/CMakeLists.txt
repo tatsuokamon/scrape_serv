@@ -16,7 +16,5 @@ add_library(cpp
     src/find_detail.cpp
     src/update_tag.cpp
 )
-
-target_link_libraries(cpp PRIVATE nlohmann_json::nlohmann_json unofficial::gumbo::gumbo date::date)
 target_include_directories(cpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
+target_link_libraries(cpp PRIVATE nlohmann_json::nlohmann_json unofficial::gumbo::gumbo date::date)

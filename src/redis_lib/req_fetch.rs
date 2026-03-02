@@ -62,7 +62,8 @@ async fn req_fetcher_inner_process(
     blocking_time: f64,
     req_q_keyword: &String,
 ) -> Result<String, RedisError> {
-    let (_, fetched_req) = conn.blpop::<&String, (String, String)>(req_q_keyword, blocking_time)
+    let (_, fetched_req) = conn
+        .blpop::<&String, (String, String)>(req_q_keyword, blocking_time)
         .await?;
     Ok(fetched_req)
 }

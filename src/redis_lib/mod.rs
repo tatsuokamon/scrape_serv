@@ -4,7 +4,6 @@ mod req_fetch;
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
 use redis::{AsyncCommands, RedisError};
-use sha2::Digest;
 use std::string::FromUtf8Error;
 
 pub use acquire::{AcquireConfigTrait, ClientAcquireConfig, PoolAcquireConfig};
@@ -30,8 +29,8 @@ pub async fn is_recentry_got(
 }
 
 pub async fn update_job_status(
-    job_id: &String,
-    task_id: &String,
+    job_id: &str,
+    task_id: &str,
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
 ) -> Result<(), RedisLibErr> {
     Ok(conn.lpush::<&str, &str, ()>(job_id, task_id).await?)
@@ -53,9 +52,9 @@ pub async fn update_recently_got(
 }
 
 pub async fn push_result(
-    keyword: &String,
-    task_id: &String,
-    result: &String,
+    keyword: &str,
+    task_id: &str,
+    result: &str,
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
 ) -> Result<(), RedisLibErr> {
     Ok(conn.hset(keyword, task_id, result).await?)

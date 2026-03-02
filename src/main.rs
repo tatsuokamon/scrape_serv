@@ -3,6 +3,7 @@ use std::{sync::Arc, time::Duration};
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use redis::AsyncConnectionConfig;
+use tokio::sync::Semaphore;
 
 use crate::{
     parser::{ffi_parser_factory, find_detail, find_meta, max_idx_finder, update_tag},
@@ -75,6 +76,7 @@ async fn main() {
     // ready process req contract
     let result_keyword = get_env!("RESULT_KEYWORD");
     let storage_time = get_env_with_parsing!("STORAGE_TIME", usize);
+    let created_path_inner_buf = get_env_with_parsing!("INNER_PATH_BUFFER", usize);
 
     macro_rules! generate_req_contract {
         ($scraper:expr) => {
@@ -82,6 +84,11 @@ async fn main() {
                 result_keyword: result_keyword.clone(),
                 storage_time,
                 scraper: $scraper,
+                inner_buf: created_path_inner_buf,
+                semaphore: Arc::new(Semaphore::new(get_env_with_parsing!(
+                    "SEMAPHORE_SIZE",
+                    usize
+                ))),
             }
         };
     }
@@ -118,7 +125,6 @@ async fn main() {
         backoff_next: Arc::new(temp_backoff_next),
     });
 
-    let net_client = reqwest::Client::new();
     macro_rules! create_path_macro {
         ($req_fetch_contract:expr, $process_req_contract:expr) => {
             serv_engine::create_path::<BasicRedisReq>(
@@ -127,7 +133,6 @@ async fn main() {
                 $req_fetch_contract,
                 pool.clone(),
                 pool_config.clone(),
-                net_client.clone(),
                 $process_req_contract,
             )
             .await

@@ -130,7 +130,7 @@ void find_tags_from_post_div(GumboNode* node,
 			std::string text;
 			inner_text(child, text);
 
-			Tag result(std::move(href), std::move(text));
+			Tag result(std::move(text), std::move(href));
 			if (title == "声優") {
 				cv.push_back(std::move(result));
 			}
